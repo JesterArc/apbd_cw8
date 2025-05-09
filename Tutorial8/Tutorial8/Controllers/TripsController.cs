@@ -14,7 +14,7 @@ namespace Tutorial8.Controllers
         {
             _tripsService = tripsService;
         }
-
+        
         [HttpGet]
         public async Task<IActionResult> GetTrips()
         {
