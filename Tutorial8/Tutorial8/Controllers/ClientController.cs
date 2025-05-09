@@ -17,6 +17,7 @@ public class ClientController : ControllerBase
 
     [HttpGet("{id}/trips")]
     public async Task<IActionResult> GetTrips(int id)
+    // returns a list of trips (with extra information) that client with this id is on
     {
         if (!await _clientService.DoesClientExist(id)){
             return NotFound("There is no client with id = " + id);
@@ -32,6 +33,7 @@ public class ClientController : ControllerBase
 
     [HttpPost]
     public async Task<IActionResult> CreateClient([FromBody] ClientDTO clientDto)
+    // if FromBody parameters are valid, creates a new client
     {
         if (!ValidateStringLength(clientDto.FirstName, 1, 120))
             return BadRequest("First name must be 120 characters or fewer but not zero");
@@ -40,6 +42,7 @@ public class ClientController : ControllerBase
         // writing email validation makes my head hurt
         if (!ValidateStringLength(clientDto.Email, 1, 120))
             return BadRequest("Email must be 120 characters or fewer but not zero");
+        // there are many standards for telephone numbers, so i decieded not to check for specific length
         if (!ValidateStringLength(clientDto.Telephone, 1, 120))
         {
             return BadRequest("Telephone number must be 120 characters or fewer but not zero");
@@ -59,6 +62,7 @@ public class ClientController : ControllerBase
 
     [HttpPut("{id}/trips/{tripId}")]
     public async Task<IActionResult> AddClientToTrip(int id, int tripId)
+    // if there is room on a trip, adds a client (id) onto it (tripid)
     {
         if (!await _clientService.DoesClientExist(id))
         {
@@ -91,6 +95,7 @@ public class ClientController : ControllerBase
 
     [HttpDelete("{id}/trips/{tripId}")]
     public async Task<IActionResult> RemoveClientFromTrip(int id, int tripId)
+    // removes client from a trip, returns a message if delete was successful, but removed nothing
     {
         if (!await _clientService.DoesClientTripExist(id, tripId))
         {
@@ -118,6 +123,7 @@ public class ClientController : ControllerBase
         return (10 - sum % 10 == pesel[10] - '0');
     }
     public static bool ValidateStringLength(string name, int minLength, int maxLength)
+    // added because I would have written these lines more times than it takes to make this method
     {
         if (name.Length < minLength || name.Length > maxLength)
             return false;
