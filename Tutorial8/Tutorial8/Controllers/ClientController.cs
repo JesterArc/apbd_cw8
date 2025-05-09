@@ -88,6 +88,17 @@ public class ClientController : ControllerBase
             return BadRequest(ex.Message);
         }
     }
+
+    [HttpDelete("{id}/trips/{tripId}")]
+    public async Task<IActionResult> RemoveClientFromTrip(int id, int tripId)
+    {
+        if (!await _clientService.DoesClientTripExist(id, tripId))
+        {
+            return Ok("There is no client with id = " + id + " going on a trip with id = " + tripId);
+        }
+        await _clientService.RemoveClientFromATrip(id, tripId);
+        return NoContent();
+    }
     
     public static bool ValidatePesel(string pesel)
     {

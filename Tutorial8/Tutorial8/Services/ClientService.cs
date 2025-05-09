@@ -150,4 +150,50 @@ public class ClientService : IClientService
         }
         
     }
+
+    public async Task RemoveClientFromATrip(int id, int tripId)
+    {
+        await using SqlConnection connection = new SqlConnection(_connectionString);
+        await using SqlCommand command = new SqlCommand();
+        
+        command.Connection = connection;
+        await connection.OpenAsync();
+        
+        DbTransaction transaction = await connection.BeginTransactionAsync();
+        command.Transaction = transaction as SqlTransaction;
+        try
+        {
+            command.CommandText = @"Delete from Client_Trip where IdTrip = @tripId and IdClient = @id";
+            command.Parameters.AddWithValue("@id", id);
+            command.Parameters.AddWithValue("@tripId", tripId);
+            await command.ExecuteNonQueryAsync();
+            await transaction.CommitAsync();
+        }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+    
+    public async Task<bool> DoesClientTripExist(int id, int tripId)
+    {
+        var quantity = 0;
+        var command = @"Select Count(1) from Client_Trip where IdClient = @Id and IdTrip = @tripId";
+        using (SqlConnection conn = new SqlConnection(_connectionString))
+        using (SqlCommand cmd = new SqlCommand(command, conn))
+        {
+            await conn.OpenAsync();
+            cmd.Parameters.AddWithValue("@tripId", tripId);
+            cmd.Parameters.AddWithValue("@Id", id);
+            using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    quantity = reader.GetInt32(0);
+                }
+            }
+        }
+        return quantity > 0;
+    }
 }
