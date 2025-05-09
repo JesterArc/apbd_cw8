@@ -6,4 +6,5 @@ public interface IClientService
 {
     public Task<List<Client_TripDTO>> GetTripsByClientId(int id);
     public Task<bool> DoesClientExist(int id);
+    public Task AddNewClientAsync(ClientDTO ClientDto);
 }

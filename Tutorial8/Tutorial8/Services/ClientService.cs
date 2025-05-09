@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using System.Data.Common;
+using Microsoft.Data.SqlClient;
 using Tutorial8.Models.DTOs;
 
 namespace Tutorial8.Services;
@@ -82,5 +83,44 @@ public class ClientService : IClientService
             }
         }
         return quantity > 0;
+    }
+
+    public async Task AddNewClientAsync(ClientDTO clientDto)
+    {
+        await using SqlConnection connection = new SqlConnection(_connectionString);
+        await using SqlCommand command = new SqlCommand();
+        
+        command.Connection = connection;
+        await connection.OpenAsync();
+        
+        DbTransaction transaction = await connection.BeginTransactionAsync();
+        command.Transaction = transaction as SqlTransaction;
+        try
+        {
+            command.CommandText = @"Insert into Client (FirstName, LastName, Email, Telephone, Pesel) 
+                                    values (@Name, @Surname, @Email, @Telephone, @Pesel)";
+            command.Parameters.AddWithValue("@Name", clientDto.FirstName);
+            command.Parameters.AddWithValue("@Surname", clientDto.LastName);
+            command.Parameters.AddWithValue("@Email", clientDto.Email);
+            command.Parameters.AddWithValue("@Telephone", clientDto.Telephone);
+            command.Parameters.AddWithValue("@Pesel", clientDto.Pesel);
+            
+            await command.ExecuteNonQueryAsync();
+            command.Parameters.Clear();
+            command.CommandText = @"Select @@Identity";
+            using (var reader = await command.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    clientDto.IdClient = (int) reader.GetDecimal(0);
+                }
+            }
+            await transaction.CommitAsync();
+        }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 }

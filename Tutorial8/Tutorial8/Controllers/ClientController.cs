@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Tutorial8.Models.DTOs;
 using Tutorial8.Services;
 
 namespace Tutorial8.Controllers;
@@ -27,5 +28,55 @@ public class ClientController : ControllerBase
             return NoContent();
         }
         return Ok(trip);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> CreateClient([FromBody] ClientDTO clientDto)
+    {
+        if (!ValidateStringLength(clientDto.FirstName, 1, 120))
+            return BadRequest("First name must be 120 characters or fewer but not zero");
+        if (!ValidateStringLength(clientDto.LastName, 1, 120))
+            return BadRequest("Last name must be 120 characters or fewer but not zero");
+        // writing email validation makes my head hurt
+        if (!ValidateStringLength(clientDto.Email, 1, 120))
+            return BadRequest("Email must be 120 characters or fewer but not zero");
+        if (!ValidateStringLength(clientDto.Telephone, 1, 120))
+        {
+            return BadRequest("Telephone number must be 120 characters or fewer but not zero");
+        }
+        if (!ValidatePesel(clientDto.Pesel))
+            return BadRequest("Pesel is invalid");
+        try
+        {
+            await _clientService.AddNewClientAsync(clientDto);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        return CreatedAtAction(nameof(CreateClient), new {IdClient = clientDto.IdClient}, clientDto);
+    }
+    public static bool ValidatePesel(string pesel)
+    {
+        if (pesel.Length != 11)
+            return false;
+        if (!pesel.Any(char.IsDigit))
+        {
+            return false;
+        }
+
+        var sum = 0;
+        List<int> peselNumbers = [1, 3, 7, 9]; 
+        for (int i = 0; i < 10; i++)
+        {
+            sum += (pesel[i] - '0') * peselNumbers[i%4];
+        }
+        return (10 - sum % 10 == pesel[10] - '0');
+    }
+    public static bool ValidateStringLength(string name, int minLength, int maxLength)
+    {
+        if (name.Length < minLength || name.Length > maxLength)
+            return false;
+        return true;
     }
 }
