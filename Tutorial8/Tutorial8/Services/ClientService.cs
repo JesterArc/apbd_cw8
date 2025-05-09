@@ -123,4 +123,31 @@ public class ClientService : IClientService
             throw;
         }
     }
+
+    public async Task PutClientOntoATrip(int tripId, int id, int registeredAt)
+    {
+        await using SqlConnection connection = new SqlConnection(_connectionString);
+        await using SqlCommand command = new SqlCommand();
+        
+        command.Connection = connection;
+        await connection.OpenAsync();
+        
+        DbTransaction transaction = await connection.BeginTransactionAsync();
+        command.Transaction = transaction as SqlTransaction;
+        try
+        {
+            command.CommandText = @"Insert into Client_Trip Values (@id, @tripId , @registeredAt, null)";
+            command.Parameters.AddWithValue("@id", id);
+            command.Parameters.AddWithValue("@tripId", tripId);
+            command.Parameters.AddWithValue("@registeredAt", registeredAt);
+            await command.ExecuteNonQueryAsync();
+            await transaction.CommitAsync();
+        }
+        catch (Exception e)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+        
+    }
 }

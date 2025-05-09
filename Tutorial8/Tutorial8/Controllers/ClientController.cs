@@ -56,6 +56,39 @@ public class ClientController : ControllerBase
         }
         return CreatedAtAction(nameof(CreateClient), new {IdClient = clientDto.IdClient}, clientDto);
     }
+
+    [HttpPut("{id}/trips/{tripId}")]
+    public async Task<IActionResult> AddClientToTrip(int id, int tripId)
+    {
+        if (!await _clientService.DoesClientExist(id))
+        {
+            return NotFound("There is no client with id = " + id);
+        }
+        var tripsService = new TripsService();
+        if (!await tripsService.DoesTripExist(tripId))
+        {
+            return NotFound("There is no trip with id = " + tripId);
+        }
+
+        if (!await tripsService.CanTripFitOneMore(tripId))
+        {
+            return BadRequest("No more room on that trip");
+        }
+        var year = DateTime.Now.Year;
+        var month = DateTime.Now.Month;
+        var day = DateTime.Now.Day;
+        var registerTime = year * 10000 + month * 100 + day;
+        try
+        {
+            await _clientService.PutClientOntoATrip(tripId, id, registerTime);
+            return CreatedAtAction(nameof(AddClientToTrip), new {IdClient = id, IdTrip = tripId, registeredAt = registerTime});
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+    
     public static bool ValidatePesel(string pesel)
     {
         if (pesel.Length != 11)

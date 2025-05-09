@@ -132,4 +132,27 @@ public class TripsService : ITripsService
         }
         return quantity > 0;
     }
+
+    public async Task<bool> CanTripFitOneMore(int tripId)
+    {
+        var quantity = 0;
+        var command = @"Select (t.MaxPeople - Count(1)) from dbo.Client_Trip ct
+                        Join dbo.Trip T on ct.IdTrip = T.IdTrip
+                        where ct.IdTrip = @tripId
+                        GROUP BY t.MaxPeople";
+        using (SqlConnection conn = new SqlConnection(_connectionString))
+        using (SqlCommand cmd = new SqlCommand(command, conn))
+        {
+            await conn.OpenAsync();
+            cmd.Parameters.AddWithValue("@tripId", tripId);
+            using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    quantity = reader.GetInt32(0);
+                }
+            }
+        }
+        return quantity > 0;
+    }
 }
