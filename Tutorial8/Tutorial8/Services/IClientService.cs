@@ -10,6 +10,8 @@ public interface IClientService
     public Task<bool> DoesClientExist(int id);
     // adds a new client to the database
     public Task AddNewClientAsync(ClientDTO ClientDto);
+    // these last 3 Tasks could have been a part of a new controller
+    
     // adds a new clienttrip row with specified values
     public Task PutClientOntoATrip(int tripId, int id, int registeredAt);
     // removes a row from clienttrip with specified values
