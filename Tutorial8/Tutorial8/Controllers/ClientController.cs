@@ -68,6 +68,7 @@ public class ClientController : ControllerBase
         {
             return NotFound("There is no client with id = " + id);
         }
+        // to avoid repeating the next 2 methods in ClientContructor, I just created a new instance of TripsService and called them on it
         var tripsService = new TripsService();
         if (!await tripsService.DoesTripExist(tripId))
         {
