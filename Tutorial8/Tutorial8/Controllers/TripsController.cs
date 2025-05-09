@@ -17,6 +17,7 @@ public class TripsController : ControllerBase
         
     [HttpGet]
     public async Task<IActionResult> GetTrips()
+    // returns all info about all trips
     {
         var trips = await _tripsService.GetTrips();
         return Ok(trips);
@@ -24,6 +25,7 @@ public class TripsController : ControllerBase
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetTrip(int id)
+    // returns info about specific trip
     {
         if (!await _tripsService.DoesTripExist(id)){
             return NotFound("There is no trip with id = " + id);
