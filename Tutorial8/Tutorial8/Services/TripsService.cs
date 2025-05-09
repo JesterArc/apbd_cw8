@@ -5,7 +5,6 @@ namespace Tutorial8.Services;
 
 public class TripsService : ITripsService
 {
-    // Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=APBD;Integrated Security=True;
     private readonly string _connectionString = "Server=(localdb)\\MSSQLLocalDB;Initial Catalog=apbd;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False";
     
     
